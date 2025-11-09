@@ -1,0 +1,55 @@
+ASSIGNMENT NO.3 : CONTROL STRUCTURE 
+CREATE TABLE borrower( 
+roll_no       
+name           
+ NUMBER(5), 
+VARCHAR(30), 
+date_of_issue  DATE, 
+name_of_book   VARCHAR2(50), 
+status         
+); 
+CHAR(1)       
+CREATE TABLE fine( 
+roll_no  NUMBER(5), 
+date    
+ DATE, 
+amt      NUMBER(10,2) 
+); 
+INSERT INTO borrower 
+VALUES(101,'Riya',DATE '2025-10-01','DBMS','I'); 
+INSERT INTO borrower 
+VALUES(102,'Amit',DATE '2025-10-15','CN','I'); 
+DROP PROCEDURE IF EXISTS return_book; 
+DELIMITER// 
+CREATE PROCEDURE return_book(IN p_roll INT, IN p_book VARCHAR(50)) 
+BEGIN 
+    DECLARE v_doi DATE; 
+    DECLARE v_days INT; 
+    DECLARE v_amt DECIMAL(10,2) DEFAULT 0; 
+ 
+    SELECT date_of_issue INTO v_doi 
+    FROM borrower 
+    WHERE roll_no = p_roll AND name_of_book = p_book; 
+ 
+    SET v_days = DATEDIFF(CURDATE(),v_doi); 
+ 
+    UPDATE borrower 
+    SET status='R' 
+    WHERE roll_no = p_roll AND name_of_book = p_book; 
+ 
+    IF v_days > 30 THEN 
+        SET v_amt = v_days * 50; 
+    ELSEIF v_days >= 15 THEN 
+        SET v_amt = v_days * 5; 
+    END IF; 
+ 
+    IF v_amt > 0 THEN 
+        INSERT INTO fine(roll_no,date,amt) 
+        VALUES(p_roll,CURDATE(),v_amt); 
+    END IF; 
+ 
+    SELECT CONCAT('Book Returned. Days=',v_days,' Fine=',v_amt) AS Result; 
+ 
+END// 
+DELIMITER ; 
+TO RUN: CALL return_book(101,'DBMS'); 
